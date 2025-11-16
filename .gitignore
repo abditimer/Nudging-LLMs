@@ -1,0 +1,27 @@
+# Data (private)
+data/
+
+# Environment
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Results (if large)
+results/metrics/*.csv
+results/logs/*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store

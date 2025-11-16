@@ -1,0 +1,9 @@
+# requirements.txt
+requests>=2.31.0          # Ollama API calls
+pandas>=2.2.0             # Data handling
+matplotlib>=3.9.0         # Visualization
+seaborn>=0.13.0          # Pretty plots
+rapidfuzz>=3.10.0        # Fuzzy string matching
+sentence-transformers>=3.1.0  # Semantic similarity
+tqdm>=4.66.0             # Progress bars
+jupyter>=1.1.0           # Notebook environment
