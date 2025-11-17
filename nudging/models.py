@@ -15,6 +15,9 @@ class OllamaClient:
     timeout: int = 120
 
     def _post(self, path:str, payload:Dict, stream:bool=False):
+        """
+        Helps makes HTTP post requests.
+        """
         url = f"{self.base_url.rstrip('/')}{path}"
         resp = requests.post(
             url,
@@ -34,6 +37,15 @@ class OllamaClient:
             stream: bool = False,
             **extra
     ) -> str | Iterator[str]:
+        """
+        prompt-based text generation function.
+
+        params:
+            - prompt: str
+            - system: str
+            - temperature: float creativity param
+            - max_tokens: int  
+        """
         payload = {
             "model": self.model,
             "prompt": prompt,
@@ -73,6 +85,9 @@ class OllamaClient:
             stream: bool = False,
             **extra,
     ) -> str | Iterator[str]:
+        """
+        Multi-turn conversation function.
+        """
         payload = {
             "model": self.model,
             "messages": messages,
