@@ -18,6 +18,22 @@ hypothesis: commercial models (GPT5, Claude) will outperform closed models
 4. How does prefix length affect completion accuract for unseen content?
 hypothesis: Longer prefix length provides more context but does not enable memorisation
 
+### Overview of this project
+
+You'll find all my code in the following
+- nudging/ : this is our main source code package
+- experiments/ : experiment runner scripts
+- configs/ : configuration files
+
+You'll find research artifacts here
+- data/ : **not included.**
+- notebooks/ exploratoration
+- results/ : experiment results, figures, tables
+- models/ : trained model weights
+
+for reproducibility:
+- tests/ : unit tests for core functionality
+
 
 ## Dataset Setup
 
