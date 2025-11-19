@@ -20,6 +20,9 @@ def run_single_experiment(
     verbose: bool = False
 ) -> Dict:
     """Run one experiment, return metrics dict"""
+
+    #TODO: add input validation
+
     # Split text
     split_text = _get_split_text(content, percentage)
     context = split_text['test_words']

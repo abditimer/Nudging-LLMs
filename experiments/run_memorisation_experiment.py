@@ -19,35 +19,41 @@ from nudging.models import OllamaClient
 from nudging.data_loader import load_data
 from nudging.experiment import run_single_experiment
 
-
 # load config file
-from configs.experiment_config import EXPERIMENT_BASELINE, ModelConfig
-experiment = EXPERIMENT_BASELINE
-model_config = ModelConfig()
+from configs.experiment_config import EXPERIMENT_BASELINE
+experiment_config = EXPERIMENT_BASELINE
+model_config = experiment_config.model_config
 
 import logging
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-print(f"Running: {experiment.name}")
-print(f"Context percentages: {experiment.context_percentages}")
+logger.info(f"Running: {experiment_config.name}")
+logger.info(f"Context percentages: {experiment_config.context_percentages}")
 
 # Initialise model
-print("initialise ollama client...")
-client = OllamaClient()
-print("OK")
+logger.info("initialise ollama client...")
+client = OllamaClient(model=model_config.name)
+logger.info("✓")
 
 # initialise data
-print("loading data...")
-dataset = load_data(base_dir="data", min_words=30, max_samples=experiment.max_samples)
-print("OK")
+logger.info("loading data...")
+dataset = load_data(
+    base_dir=experiment_config.data_config.data_folder_name, 
+    min_words=experiment_config.data_config.min_word_count, 
+    max_samples=experiment_config.max_samples
+)
+logger.info("✓")
 
+
+logger.info("iterating over the loaded data....")
 # For each content item:
 for title, content in dataset.items():
-    print(f"{title}: {content[:10]}")
+    logger.info(f"starting with: {title}")
+
 #   For each context percentage:
-    for context_percentage in experiment.context_percentages:
-        print("\n" + "="*60)
-        print(context_percentage)
+    for context_percentage in experiment_config.context_percentages:
+        logger.info(f"%: {context_percentage}")
         # Generate continuation
         result = run_single_experiment(
             content=content,
@@ -66,6 +72,9 @@ for title, content in dataset.items():
                 print(f"  {k}: {v}")
         print("\n✓ Test complete!")
         print("="*60)
+
+
+print("all data loaded.")
 
 #     Store results
 # Save results DataFrame to CSV

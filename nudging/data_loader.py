@@ -16,7 +16,7 @@ from typing import Dict, Tuple, Optional, Callable
 
 logger = logging.getLogger(__name__)
 
-__all__ = ['load_data', 'DatasetResult', 'preprocess_text']
+__all__ = ['load_data', 'preprocess_text']
 
 # --- Regex patterns for podcast transcript cleaning ---
 _TS_INLINE = re.compile(r'\b(?:\d{1,2}:)?\d{1,2}:\d{2}\b')   # hh:mm:ss or m:ss or mm:ss
@@ -71,7 +71,6 @@ def preprocess_text(category: str, text: str) -> str:
     text = re.sub(r'\n{3,}', "\n\n", text).strip()
     return text
 
-
 def _load_contents_by_structure(
         base_dir: str | Path = "data",
         exts: Tuple[str, ...] = (".txt",),
@@ -89,6 +88,7 @@ def _load_contents_by_structure(
         exts: Tuple of file ext to process
         min_words: min word count threshold
         custom_preprocessor: optional function
+        max_sample: % to truncate by characterss
 
     returns:
         Tuple of (contents_dict, inventory_dataframe)
@@ -96,14 +96,13 @@ def _load_contents_by_structure(
 
     base = Path(base_dir)
     contents = {}
-    records = []
 
     logger.info(f"Scanning directory: {base}")
     logger.debug(f"File extension: {exts}, min_words: {min_words}")
 
     for p in base.rglob('*'):
         if not p.is_file():
-            logger.debug(f"Skipping non-file: {p}")
+            logger.info(f"Skipping non-file: {p}")
             continue
         if p.suffix.lower() not in exts:
             logger.debug(f"Skipping {p}: extension {p.suffix} not in {exts}")
@@ -136,15 +135,16 @@ def _load_contents_by_structure(
 
         if kept:
             if max_samples is not None and max_samples > 0 :
-                contents[key] = text[:max_samples]
-                logger.debug(f"TEST MODE - Kept {key}: {words} words, limit : {max_samples}")
+                content_testing_amount = int(len(text) * (max_samples / 100))
+                contents[key] = text[:content_testing_amount]
+                logger.info(f"TEST MODE - Kept {key}: {words} words, limit : {content_testing_amount}")
             else:
                 contents[key] = text
-                logger.debug(f"Kept {key}: {words} words")
+                logger.info(f"Kept {key}: {words} words")
         else:
             logger.debug(f"filtered {key}: only {words} words (min: {min_words})")
 
-    logger.info(f"Loaded {len(contents)} files (kept) out of {len(records)} total")
+    logger.info(f"Loaded {len(contents)} files")
     
 
     return contents
@@ -170,6 +170,7 @@ def load_data(
         custom_preprocessor: Optional custom preprocessing function that takes
                            (category, text) and returns processed text.
                            If None, uses default preprocess_text function.
+        max_sample: % to truncate by characterss
 
     Returns:
         contents: Dict mapping 'category::owner::name' to preprocessed text

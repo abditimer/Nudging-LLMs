@@ -28,6 +28,8 @@ class OllamaClient:
         resp.raise_for_status()
         return resp
 
+# TODO: add network retry logic
+
     def generate(
             self,
             prompt: str,
