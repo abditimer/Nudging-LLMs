@@ -21,10 +21,12 @@ from nudging.experiment import run_single_experiment
 
 
 # load config file
-from configs.experiment_config import MEMORISATION_BASELINE, DataConfig, ModelConfig
-experiment = MEMORISATION_BASELINE
-data_config = DataConfig()
+from configs.experiment_config import EXPERIMENT_BASELINE, ModelConfig
+experiment = EXPERIMENT_BASELINE
 model_config = ModelConfig()
+
+import logging
+logging.basicConfig(level=logging.INFO)
 
 print(f"Running: {experiment.name}")
 print(f"Context percentages: {experiment.context_percentages}")
@@ -36,12 +38,11 @@ print("OK")
 
 # initialise data
 print("loading data...")
-dataset = load_data(base_dir="data", min_words=30)
-print(dataset.summary)
+dataset = load_data(base_dir="data", min_words=30, max_samples=experiment.max_samples)
 print("OK")
 
 # For each content item:
-for title, content in dataset.contents.items():
+for title, content in dataset.items():
     print(f"{title}: {content[:10]}")
 #   For each context percentage:
     for context_percentage in experiment.context_percentages:

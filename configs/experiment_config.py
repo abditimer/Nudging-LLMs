@@ -6,6 +6,7 @@ class DataConfig:
     min_word_count: int = 30
     categories: List[str] = None
     batch_size: int = 32
+    max_samples: Optional[int] = None
 
     def __post_init__(self):
         if self.categories is None:
@@ -21,19 +22,22 @@ class ModelConfig:
 class ExperimentConfig:
     name: str = "memorisation_study"
     context_percentages: List[int] = None
+    max_samples: int = None
     random_seed: int = 42
 
     def __post_init__(self):
         if self.context_percentages is None:
             self.context_percentages = [20,60]
 
+
 # Pre-defined configs for common experiments
-MEMORISATION_BASELINE = ExperimentConfig(
+EXPERIMENT_BASELINE = ExperimentConfig(
     name="memorisation_baseline",
-    context_percentages=[20, 40, 60]
+    context_percentages=[20, 40, 60],
+    max_samples=3
 )
 
-MEMORISATION_EXTENDED = ExperimentConfig(
+EXPERIMENT_EXTENDED = ExperimentConfig(
     name="memorisation_extended", 
     context_percentages=[0, 5, 10, 20, 30, 50, 75, 90, 98]
 )

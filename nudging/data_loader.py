@@ -24,38 +24,6 @@ _TS_LINE   = re.compile(r'^\s*(?:\d{1,2}:)?\d{1,2}:\d{2}\s*$') # timestamp-only 
 _SPEAKER   = re.compile(r'^\s*[A-Z][A-Z\s.\'-]{2,}:\s+')       # ALLCAPS NAME:
 _BRACKETED = re.compile(r'\s*\[(?:MUSIC|APPLAUSE|LAUGHTER|SFX)[^\]]*\]\s*', re.I)
 
-@dataclass
-class DatasetResult:
-    """
-    container for loaded dataset with both content and metadata
-    
-    Attributes:
-        contents: Dictionary mapping keys to preproccessed text content.
-                    keys format: 'category::owner::name'
-        inventory: Dataframe with metadata (path, category, owner, name
-                    word count etc).
-    """
-
-    contents: Dict[str, str]
-    inventory: pd.DataFrame
-
-    @property
-    def summary(self) -> Dict[str, int]:
-        """
-        Get summary stats about the loaded dataset.
-
-        Returns:
-            Dict with counts for total files, kept files,
-            total words, and unique categories/owners.
-        """
-        return {
-            'total_files': len(self.inventory),
-            'kept_files': int(self.inventory['kept'].sum()),
-            'filtered_files': int((~self.inventory['kept']).sum()),
-            'total_words': int(self.inventory['words'].sum()),
-            'categories': int(self.inventory['category'].nunique()),
-            'owners': int(self.inventory['owner'].nunique())
-        }
     
 def preprocess_text(category: str, text: str) -> str:
     """
@@ -108,6 +76,7 @@ def _load_contents_by_structure(
         base_dir: str | Path = "data",
         exts: Tuple[str, ...] = (".txt",),
         min_words: int=30,
+        max_samples: Optional[int] = None,
         custom_preprocessor: Optional[Callable[[str, str], str]] = None,
 ) -> Tuple[Dict[str, str], pd.DataFrame]:
     """
@@ -166,35 +135,27 @@ def _load_contents_by_structure(
         key = f"{category}::{owner}::{name}"
 
         if kept:
-            contents[key] = text
-            logger.debug(f"Kept {key}: {words} words")
+            if max_samples is not None and max_samples > 0 :
+                contents[key] = text[:max_samples]
+                logger.debug(f"TEST MODE - Kept {key}: {words} words, limit : {max_samples}")
+            else:
+                contents[key] = text
+                logger.debug(f"Kept {key}: {words} words")
         else:
             logger.debug(f"filtered {key}: only {words} words (min: {min_words})")
-        
-        records.append({
-            "key": key,
-            "path": str(p),
-            "category": category,
-            "owner": owner,
-            "name": name,
-            "ext": p.suffix.lower(),
-            "words": words,
-            "kept": kept,
-        })
-
-    inv = pd.DataFrame.from_records(records).sort_values(["category", "owner", "name"])
 
     logger.info(f"Loaded {len(contents)} files (kept) out of {len(records)} total")
-    logger.info(f"Total words: {inv['words'].sum():,}")
+    
 
-    return contents, inv
+    return contents
 
 def load_data(
         base_dir: str | Path = "data",
         exts: Tuple[str, ...] = (".txt",),
         min_words: int = 30,
+        max_samples: Optional[int] = None,
         custom_preprocessor: Optional[Callable[[str, str], str]] = None,
-) -> DatasetResult:
+) -> dict:
     """
     Load and preprocess text data from structured directory hierarchy.
 
@@ -211,10 +172,8 @@ def load_data(
                            If None, uses default preprocess_text function.
 
     Returns:
-        DatasetResult containing:
-            - contents: Dict mapping 'category::owner::name' to preprocessed text
-            - inventory: DataFrame with metadata for all processed files
-
+        contents: Dict mapping 'category::owner::name' to preprocessed text
+          
     Raises:
         FileNotFoundError: If base_dir does not exist
         NotADirectoryError: If base_dir is a file, not a directory
@@ -241,12 +200,13 @@ def load_data(
 
     logger.info(f"Starting data load from: {base_dir}")
 
-    contents, inventory = _load_contents_by_structure(
-        base_dir, exts, min_words, custom_preprocessor
+    contents = _load_contents_by_structure(
+        base_dir=base_dir, 
+        exts=exts, 
+        min_words=min_words, 
+        custom_preprocessor=custom_preprocessor, 
+        max_samples=max_samples
     )
+    logger.info(f"Load complete.")
 
-    result = DatasetResult(contents=contents, inventory=inventory)
-
-    logger.info(f"Load complete. Summary: {result.summary}")
-
-    return result
+    return contents
