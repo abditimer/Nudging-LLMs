@@ -25,12 +25,12 @@ class ExperimentConfig:
 
     def __post_init__(self):
         if self.context_percentages is None:
-            self.context_percentages = [20,80]
+            self.context_percentages = [20,60]
 
 # Pre-defined configs for common experiments
 MEMORISATION_BASELINE = ExperimentConfig(
     name="memorisation_baseline",
-    context_percentages=[20, 80]
+    context_percentages=[20, 40, 60]
 )
 
 MEMORISATION_EXTENDED = ExperimentConfig(
