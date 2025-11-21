@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 def run_experiment(experiment_config, model_config, client, dataset):
     from nudging.experiment import run_single_experiment
-    
+
     logger.info("iterating over the loaded data....")
     # For each content item:
     for title, content in dataset.items():
@@ -33,8 +33,9 @@ def run_experiment(experiment_config, model_config, client, dataset):
                 model_client=client,
                 verbose=False,
             )
-            # Compute all metrics
-            # 5. display results
+
+            # TODO: change to a list
+            # TODO: look at metrics logic being returned
             
             print("RESULTS")
             for k,v in result.items():
@@ -44,9 +45,6 @@ def run_experiment(experiment_config, model_config, client, dataset):
                     print(f"  {k}: {v}")
             print("\n✓ Test complete!")
             print("="*60)
-
-
-print("all data loaded.")
 
 def _setup_experiment_for_terminal():
     import sys
