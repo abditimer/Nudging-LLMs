@@ -77,7 +77,7 @@ def _load_contents_by_structure(
         min_words: int=30,
         max_samples: Optional[int] = None,
         custom_preprocessor: Optional[Callable[[str, str], str]] = None,
-) -> Tuple[Dict[str, str], pd.DataFrame]:
+) -> dict:
     """
     Internal function to load texts from structured directory.
 
@@ -91,7 +91,8 @@ def _load_contents_by_structure(
         max_sample: % to truncate by characterss
 
     returns:
-        Tuple of (contents_dict, inventory_dataframe)
+        contents_dict: dict returns a dict with the shape
+        {{category}::{owner}::{name} : the_actual_text}
     """
 
     base = Path(base_dir)
