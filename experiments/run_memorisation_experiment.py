@@ -9,14 +9,14 @@ My main reproducible experiment runner.
 - saves results to results/metrics as csv
 - generates and saves plots to results/figures
 """
-
+import json
 import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 def run_experiment(experiment_config, model_config, client, dataset):
-    from nudging.experiment import run_single_experiment
+    from nudging.experiment import run_experiments
 
     logger.info("iterating over the loaded data....")
     # For each content item:
@@ -27,24 +27,16 @@ def run_experiment(experiment_config, model_config, client, dataset):
         for context_percentage in experiment_config.context_percentages:
             logger.info(f"%: {context_percentage}")
             # Generate continuation
-            result = run_single_experiment(
+            result = run_experiments(
                 content=content,
                 percentage=context_percentage,
                 model_client=client,
                 verbose=False,
             )
 
-            # TODO: change to a list
             # TODO: look at metrics logic being returned
-            
-            print("RESULTS")
-            for k,v in result.items():
-                if isinstance(v, float):
-                    print(f"  {k}: {v:.4f}")
-                else:
-                    print(f"  {k}: {v}")
-            print("\n✓ Test complete!")
-            print("="*60)
+            logger.info("Experiment results: %s", json.dumps(result, indent=2))
+    return result
 
 def _setup_experiment_for_terminal():
     import sys

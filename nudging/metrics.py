@@ -1,8 +1,15 @@
 from rapidfuzz import fuzz
 import numpy as np
 
+import logging
+logger = logging.getLogger(__name__)
+
+from sentence_transformers import SentenceTransformer
+semantic_model = SentenceTransformer('all-MiniLM-L6-v2')
+
 def exact_match_score(generated:str,target:str) -> float:
     """Simple exact character match"""
+    logger.info('calculating exact match')
     generated_cleaned = generated.lower().strip()
     target_cleaned = target.lower().strip()
     if not target_cleaned:
@@ -13,9 +20,11 @@ def exact_match_score(generated:str,target:str) -> float:
 def fuzzy_match_score(generated:str, target:str) -> float:
     """compare 2 texts using fuzzy matching (Levenshtein distance).
     Returns between 0.0 -> 1.0 (the higher, the more similar)"""
+    logger.info('calculating fuzzy match')
     return fuzz.ratio(generated.lower(), target.lower()) / 100.0
 
 def token_overlap_score(generated:str, target:str) -> float:
+    logger.info('calculating token overlap')
     generated_tokens = set(generated.lower().split())
     target_tokens = set(target.lower().split())
     if not target_tokens:
@@ -24,11 +33,14 @@ def token_overlap_score(generated:str, target:str) -> float:
     union = len(generated_tokens | target_tokens)
     return intersection / union if union > 0 else 0.0
 
-def semantic_similarity_score(generated:str, target:str, model) -> float:
+def semantic_similarity_score(generated:str, target:str) -> float:
     "cosine similarity of embeddings"
+    logger.info('calculating semantic similarity')
+    
+
     if not generated.strip() or not target.strip():
         return 0.0
-    embeddings = model.encode([generated, target])
+    embeddings = semantic_model.encode([generated, target])
     similarity = np.dot(embeddings[0], embeddings[1]) / (
         np.linalg.norm(embeddings[0]) * np.linalg.norm(embeddings[1])
     )
