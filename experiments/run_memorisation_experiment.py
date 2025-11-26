@@ -10,6 +10,8 @@ My main reproducible experiment runner.
 - generates and saves plots to results/figures
 """
 import json
+from collections import defaultdict
+
 import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -17,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 def run_experiment(experiment_config, model_config, client, dataset):
     from nudging.experiment import run_experiments
+    
+    experiment_results = []
 
     logger.info("iterating over the loaded data....")
     # For each content item:
@@ -25,9 +29,10 @@ def run_experiment(experiment_config, model_config, client, dataset):
 
     #   For each context percentage:
         for context_percentage in experiment_config.context_percentages:
-            logger.info(f"%: {context_percentage}")
+            logger.info(f"=====>{context_percentage}%")
             # Generate continuation
             result = run_experiments(
+                title=title,
                 content=content,
                 percentage=context_percentage,
                 model_client=client,
@@ -36,7 +41,10 @@ def run_experiment(experiment_config, model_config, client, dataset):
 
             # TODO: look at metrics logic being returned
             logger.info("Experiment results: %s", json.dumps(result, indent=2))
-    return result
+
+            experiment_results.append(result)
+
+    return experiment_results
 
 def _setup_experiment_for_terminal():
     import sys

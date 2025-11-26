@@ -59,6 +59,7 @@ def run_single_experiment(
     }
 
 def run_experiments(
+    title: str,
     content: str,
     percentage: float, 
     model_client: OllamaClient,
@@ -85,6 +86,7 @@ def run_experiments(
 
     # Calculate metrics
     metrics = {
+        "content": title,
         "percentage": percentage,
         "context_words": len(context.split()),
         "target_words": len(target.split()),

@@ -59,7 +59,7 @@ EXPERIMENT_BASELINE_MULTIPLE = ExperimentConfig(
 
 EXPERIMENT_EXTENDED = ExperimentConfig(
     name="memorisation_extended", 
-    context_percentages=[0, 5, 10, 20, 30, 50, 75, 90, 98],
+    context_percentages=[5, 25, 50, 75, 90],
     model_config=ModelConfig(),
     data_config=DataConfig()
 )
