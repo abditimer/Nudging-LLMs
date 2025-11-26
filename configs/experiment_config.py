@@ -34,7 +34,7 @@ class ExperimentConfig:
             self.context_percentages = [20,60]
 
 # Pre-defined configs for common experiments
-EXPERIMENT_BASELINE = ExperimentConfig(
+EXPERIMENT_BASELINE_SAMPLED = ExperimentConfig(
     name="memorisation_baseline",
     context_percentages=[40],
     max_samples=3,
@@ -42,10 +42,17 @@ EXPERIMENT_BASELINE = ExperimentConfig(
     data_config=DataConfig()
 )
 
+EXPERIMENT_BASELINE = ExperimentConfig(
+    name="memorisation_baseline",
+    context_percentages=[40],
+    model_config=ModelConfig(),
+    data_config=DataConfig()
+)
+
 EXPERIMENT_BASELINE_MULTIPLE = ExperimentConfig(
     name="memorisation_baseline",
     context_percentages=[20, 40, 60],
-    max_samples=3,
+    #max_samples=3,
     model_config=ModelConfig(),
     data_config=DataConfig()
 )
