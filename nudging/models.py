@@ -12,7 +12,7 @@ class OllamaClient:
     """
     model: str = "qwen3:0.6b"
     base_url: str = "http://localhost:11434"
-    timeout: int = 120
+    timeout: int = 300
 
     def _post(self, path:str, payload:Dict, stream:bool=False):
         """
