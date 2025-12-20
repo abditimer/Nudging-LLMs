@@ -1,6 +1,10 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 @dataclass
 class DataConfig:
     data_folder_name: str = None
@@ -32,6 +36,9 @@ class ExperimentConfig:
     def __post_init__(self):
         if self.context_percentages is None:
             self.context_percentages = [20,60]
+        logger.info(f"Running experiment: {self.name}")
+        logger.info(f"Contexted to run: {self.context_percentages}")
+
 
 # Pre-defined configs for common experiments
 EXPERIMENT_BASELINE_SAMPLED = ExperimentConfig(
