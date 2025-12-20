@@ -74,7 +74,8 @@ def _setup_experiment_for_terminal():
     dataset = load_data(
         base_dir=experiment_config.data_config.data_folder_name, 
         min_words=experiment_config.data_config.min_word_count, 
-        max_samples=experiment_config.max_samples
+        max_samples=experiment_config.max_samples,
+        categories=experiment_config.data_config.categories
     )
     logger.info("✓")
 

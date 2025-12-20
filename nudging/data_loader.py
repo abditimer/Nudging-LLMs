@@ -12,7 +12,7 @@ import re
 import pandas as pd
 import logging
 from dataclasses import dataclass
-from typing import Dict, Tuple, Optional, Callable
+from typing import Dict, Tuple, Optional, Callable, List
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +77,7 @@ def _load_contents_by_structure(
         min_words: int=30,
         max_samples: Optional[int] = None,
         custom_preprocessor: Optional[Callable[[str, str], str]] = None,
+        categories: Optional[List[str]] = None,
 ) -> dict:
     """
     Internal function to load texts from structured directory.
@@ -122,6 +123,13 @@ def _load_contents_by_structure(
         category, owner = parts[0], parts[1]
         name = p.stem
 
+        # filter by category if specified (case-insensitive)
+        if categories is not None:
+            categories_lower = [c.lower() for c in categories]
+            if category.lower() not in categories_lower:
+                logger.debug(f"skipping {p}: category '{category}' not in {categories}")
+                continue
+
         raw = p.read_text(encoding="utf-8", errors="ignore")
 
         # use custom preprocessor if provided, otherwise use default
@@ -156,6 +164,7 @@ def load_data(
         min_words: int = 30,
         max_samples: Optional[int] = None,
         custom_preprocessor: Optional[Callable[[str, str], str]] = None,
+        categories: Optional[List[str]] = None,
 ) -> dict:
     """
     Load and preprocess text data from structured directory hierarchy.
@@ -207,7 +216,8 @@ def load_data(
         exts=exts, 
         min_words=min_words, 
         custom_preprocessor=custom_preprocessor, 
-        max_samples=max_samples
+        max_samples=max_samples,
+        categories=categories
     )
     logger.info(f"Load complete.")
 

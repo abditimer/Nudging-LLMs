@@ -61,5 +61,7 @@ EXPERIMENT_EXTENDED = ExperimentConfig(
     name="memorisation_extended", 
     context_percentages=[5, 25, 50, 75, 90],
     model_config=ModelConfig(),
-    data_config=DataConfig()
+    data_config=DataConfig(
+        categories=["songs"]
+    )
 )
