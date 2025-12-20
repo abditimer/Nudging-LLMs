@@ -17,6 +17,13 @@ def _get_split_text(text: str, percentage: float) -> dict:
     return d
 
 def _generate_response(content, percentage, model_client):
+    '''
+    it connects to our model and sends it the text.
+    
+    :param content: precontext string for the model to generate from
+    :param percentage: how much content the model is seeing
+    :param model_client: the model we are connecting to
+    '''
     logger.info("generating a response via model client.")
     #TODO: add input validation
 
