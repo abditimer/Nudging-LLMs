@@ -36,6 +36,8 @@ class ExperimentConfig:
     def __post_init__(self):
         if self.context_percentages is None:
             self.context_percentages = [20,60]
+    
+    def start_logging(self):
         logger.info(f"Running experiment: {self.name}")
         logger.info(f"Contexted to run: {self.context_percentages}")
 
