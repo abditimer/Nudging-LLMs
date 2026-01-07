@@ -25,6 +25,14 @@ class ModelConfig:
     endpoint: str = "http://localhost:11434"
 
 @dataclass
+class PromptConfig:
+    """
+    Track prompts
+    """
+    version: str
+    prompt: str
+
+@dataclass
 class ExperimentConfig:
     name: str = "memorisation_study"
     random_seed: int = 42
@@ -49,6 +57,15 @@ EXPERIMENT_BASELINE_SAMPLED = ExperimentConfig(
     max_samples=3,
     model_config=ModelConfig(),
     data_config=DataConfig()
+)
+
+EXPERIMENT_BASELINE_ONLY_SONGS = ExperimentConfig(
+    name="memorisation_baseline",
+    context_percentages=[0, 25, 60, 90],
+    model_config=ModelConfig(),
+    data_config=DataConfig(
+        categories=["songs"]
+    )
 )
 
 EXPERIMENT_BASELINE = ExperimentConfig(

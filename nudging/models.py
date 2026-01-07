@@ -52,7 +52,7 @@ class OllamaClient:
             "model": self.model,
             "prompt": prompt,
             "stream": stream,
-            "think": False,
+            #"think": False,
             "options": {
                 "temperature": temperature
             }

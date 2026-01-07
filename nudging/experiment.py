@@ -73,7 +73,7 @@ def run_experiments(
     verbose: bool = False
 ) -> Dict:
     """
-    Docstring for run_experiments
+    we first generate the response and then calculate all the metrics.
     
     :param content: this is the text we are experiment on
     :type content: str

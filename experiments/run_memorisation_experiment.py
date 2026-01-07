@@ -18,6 +18,16 @@ logger = logging.getLogger(__name__)
 
 
 def run_experiment(experiment_config, model_config, client, dataset):
+    '''
+    This runs an experiment by iterating over 
+    the loadeed data & context percentages,
+    and running a single experiment on that info.
+    
+    :param experiment_config: Description
+    :param model_config: Description
+    :param client: Description
+    :param dataset: Description
+    '''
     from nudging.experiment import run_experiments
     
     experiment_results = []
@@ -31,6 +41,7 @@ def run_experiment(experiment_config, model_config, client, dataset):
         for context_percentage in experiment_config.context_percentages:
             logger.info(f"=====>{context_percentage}%")
             # Generate continuation
+            # TODO: look at issue: enhancement not to send data each time.
             result = run_experiments(
                 title=title,
                 content=content,
