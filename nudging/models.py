@@ -10,7 +10,7 @@ class OllamaClient:
     
     default host: http://localhost:11434
     """
-    model: str = "qwen3:0.6b"
+    model: str = "qwen2.5:0.5b-instruct" 
     base_url: str = "http://localhost:11434"
     timeout: int = 300
 
@@ -52,7 +52,7 @@ class OllamaClient:
             "model": self.model,
             "prompt": prompt,
             "stream": stream,
-            #"think": False,
+            "think": False,
             "options": {
                 "temperature": temperature
             }
