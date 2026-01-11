@@ -17,6 +17,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+import time
+
+
 def run_experiment(experiment_config, model_config, client, dataset):
     '''
     This runs an experiment by iterating over 
@@ -49,6 +52,13 @@ def run_experiment(experiment_config, model_config, client, dataset):
                 model_client=client,
                 verbose=False,
             )
+
+            if experiment_config.context_delay_seconds > 0:
+                logger.info(
+                    "sleeping for %.1f s before next context",
+                    experiment_config.context_delay_seconds
+                )
+                time.sleep(experiment_config.context_delay_seconds)
 
             # TODO: look at metrics logic being returned
             logger.info("Experiment results: %s", json.dumps(result, indent=2))
