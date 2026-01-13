@@ -23,6 +23,7 @@ class ModelConfig:
     name: str = "qwen3:0.6b"
     temperature: float = 0.7
     endpoint: str = "http://localhost:11434"
+    max_tokens: Optional[int] = None
 
 @dataclass
 class PromptConfig:
@@ -51,6 +52,73 @@ class ExperimentConfig:
         logger.info(f"Contexted to run: {self.context_percentages}")
 
 
+# builder function that lets for quicker experimentation
+def baseline(
+        model:str = "qwen3:0.6b",
+        categories: Optional[List[str]] = None,
+        context_pcts: Optional[List[int]] = None,
+        max_samples: Optional[int] = None,
+        context_delay_seconds: float = 0.0,
+        temperature: float = 0.7,
+        max_tokens: Optional[int] = None,
+        **kwargs
+) -> ExperimentConfig:
+    """Create a baseline memorisation exp with custom params"""
+    return ExperimentConfig(
+        name="memorisation_baseline",
+        context_percentages=context_pcts or [40],
+        max_samples=max_samples,
+        context_delay_seconds=context_delay_seconds,
+        model_config=ModelConfig(
+            name=model,
+            temperature=temperature,
+            max_tokens=max_tokens
+        ),
+        data_config=DataConfig(
+            categories=categories
+        ),
+        **kwargs
+    )
+
+def extended(
+        model:str = "qwen3:0.6b",
+        categories: Optional[List[str]] = None,
+        context_pcts: Optional[List[int]] = None,
+        max_samples: Optional[int] = None,
+        context_delay_seconds: float = 0.0,
+        temperature: float = 0.7,
+        max_tokens: optional[int] = None,
+        **kwargs
+) -> ExperimentConfig:
+    """Create a extnded memorisation exp with custom params"""
+    return ExperimentConfig(
+        name="memorisation_extended",
+        context_percentages=context_pcts or [5,25,50,75,90],
+        max_samples=max_samples,
+        context_delay_seconds=context_delay_seconds,
+        model_config=ModelConfig(
+            name=model,
+            temperature=temperature,
+            max_tokens=max_tokens
+        ),
+        data_config=DataConfig(
+            categories=categories or ["songs"]
+        ),
+        **kwargs
+    )
+
+EXPERIMENT_BASELINE_ONLY_SONGS_QWEN = baseline(
+    model="qwen2.5:0.5b-instruct",
+    categories=["songs"],
+    context_pcts=[0, 25, 60, 90],
+    context_delay_seconds=5.0
+)
+
+# ---------------------------
+# Removing the below, but keeping for reproducability
+# ---------------------------
+
+
 # Pre-defined configs for common experiments
 EXPERIMENT_BASELINE_SAMPLED = ExperimentConfig(
     name="memorisation_baseline",
@@ -60,7 +128,7 @@ EXPERIMENT_BASELINE_SAMPLED = ExperimentConfig(
     data_config=DataConfig()
 )
 
-EXPERIMENT_BASELINE_ONLY_SONGS_QWEN = ExperimentConfig(
+EXPERIMENT_BASELINE_ONLY_SONGS_QWEN_old = ExperimentConfig(
     name="memorisation_baseline",
     context_percentages=[0, 25, 60, 90],
     model_config=ModelConfig(name="qwen2.5:0.5b-instruct"),
