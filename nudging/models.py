@@ -13,6 +13,7 @@ class OllamaClient:
     model: str = "qwen2.5:0.5b-instruct" 
     base_url: str = "http://localhost:11434"
     timeout: int = 300
+    max_tokens: Optional[int] = None
 
     def _post(self, path:str, payload:Dict, stream:bool=False):
         """
@@ -35,7 +36,6 @@ class OllamaClient:
             prompt: str,
             system: Optional[str] = None,
             temperature: float = 0.7,
-            max_tokens: Optional[int] = None,
             stream: bool = False,
             **extra
     ) -> str | Iterator[str]:
@@ -60,8 +60,9 @@ class OllamaClient:
 
         if system:
             payload["system"] = system
-        if max_tokens is not None:
-            payload["options"]["num_predict"] = max_tokens
+        if self.max_tokens is not None:
+            payload["options"]["num_predict"] = self.max_tokens
+        
         payload["options"].update(extra)
 
         resp = self._post("/api/generate", payload, stream=stream)
@@ -83,7 +84,6 @@ class OllamaClient:
             self,
             messages: List[Dict[str, str]],
             temperature: float = 0.7,
-            max_tokens : Optional[int] = None,
             stream: bool = False,
             **extra,
     ) -> str | Iterator[str]:
@@ -99,8 +99,9 @@ class OllamaClient:
             }
         }
 
-        if max_tokens is not None:
-            payload["options"]["num_predict"] = max_tokens
+        if self.max_tokens is not None:
+            payload["options"]["num_predict"] = self.max_tokens
+        
         payload["options"].update(extra)
 
         resp = self._post("/api/chat", payload, stream=stream)
