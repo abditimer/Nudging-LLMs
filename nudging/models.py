@@ -3,6 +3,9 @@ from typing import List, Dict, Optional, Iterator
 from dataclasses import dataclass
 import json
 
+import logging
+logger = logging.getLogger(__name__)
+
 @dataclass
 class OllamaClient:
     """
@@ -14,6 +17,7 @@ class OllamaClient:
     base_url: str = "http://localhost:11434"
     timeout: int = 300
     max_tokens: Optional[int] = None
+    words_to_token_multiplier: float = 1.5
 
     def _post(self, path:str, payload:Dict, stream:bool=False):
         """
@@ -61,7 +65,12 @@ class OllamaClient:
         if system:
             payload["system"] = system
         if self.max_tokens is not None:
-            payload["options"]["num_predict"] = self.max_tokens
+            num_predict = int(self.max_tokens * self.words_to_token_multiplier)
+            payload["options"]["num_predict"] = num_predict
+            logger.debug(f"""max_tokens={self.max_tokens}
+                num_predict={num_predict}
+                multiplier={self.words_to_token_multiplier}
+            """)
         
         payload["options"].update(extra)
 
@@ -100,7 +109,8 @@ class OllamaClient:
         }
 
         if self.max_tokens is not None:
-            payload["options"]["num_predict"] = self.max_tokens
+            num_predict = int(self.max_tokens * self.words_to_token_multiplier)
+            payload["options"]["num_predict"] = num_predict
         
         payload["options"].update(extra)
 
