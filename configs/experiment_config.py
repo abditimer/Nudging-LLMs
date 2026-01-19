@@ -87,7 +87,7 @@ def extended(
         max_samples: Optional[int] = None,
         context_delay_seconds: float = 0.0,
         temperature: float = 0.7,
-        max_tokens: optional[int] = None,
+        max_tokens: Optional[int] = None,
         **kwargs
 ) -> ExperimentConfig:
     """Create a extnded memorisation exp with custom params"""
