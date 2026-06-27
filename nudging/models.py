@@ -2,6 +2,8 @@ import requests
 from typing import List, Dict, Optional, Iterator
 from dataclasses import dataclass
 import json
+import subprocess
+import time
 
 import logging
 logger = logging.getLogger(__name__)
@@ -18,6 +20,39 @@ class OllamaClient:
     timeout: int = 300
     max_tokens: Optional[int] = None
     words_to_token_multiplier: float = 1.5
+
+    def is_running(self) -> bool:
+        """Return whether the configured Ollama endpoint is reachable."""
+        try:
+            resp = requests.get(
+                f"{self.base_url.rstrip('/')}/api/tags",
+                timeout=2,
+            )
+            resp.raise_for_status()
+            return True
+        except requests.RequestException:
+            return False
+
+    def ensure_running(
+            self,
+            start_if_needed: bool = True,
+            startup_wait_seconds: float = 3.0,
+    ) -> bool:
+        """Check Ollama availability, optionally starting the local service."""
+        if self.is_running():
+            return True
+
+        if not start_if_needed:
+            return False
+
+        logger.info("Ollama is not reachable; starting local Ollama service.")
+        subprocess.Popen(
+            ["ollama", "serve"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        time.sleep(startup_wait_seconds)
+        return self.is_running()
 
     def _post(self, path:str, payload:Dict, stream:bool=False):
         """

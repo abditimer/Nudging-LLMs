@@ -35,6 +35,52 @@ class TestOllamaClient(unittest.TestCase):
 
 
 
+    @patch('requests.get')
+    def test_is_running_returns_true_when_ollama_responds(self, mock_get):
+        """Test Ollama readiness check."""
+        mock_response = Mock()
+        mock_response.raise_for_status.return_value = None
+        mock_get.return_value = mock_response
+
+        self.assertTrue(self.client.is_running())
+        mock_get.assert_called_once_with(
+            "http://localhost:11434/api/tags",
+            timeout=2,
+        )
+
+    @patch('requests.get')
+    def test_is_running_returns_false_when_ollama_unavailable(self, mock_get):
+        """Test failed Ollama readiness check."""
+        mock_get.side_effect = requests.RequestException("unavailable")
+
+        self.assertFalse(self.client.is_running())
+
+    @patch('time.sleep')
+    @patch('subprocess.Popen')
+    @patch.object(OllamaClient, 'is_running')
+    def test_ensure_running_starts_ollama_when_needed(
+            self,
+            mock_is_running,
+            mock_popen,
+            mock_sleep,
+    ):
+        """Test local Ollama startup path."""
+        mock_is_running.side_effect = [False, True]
+
+        self.assertTrue(self.client.ensure_running())
+
+        mock_popen.assert_called_once()
+        mock_sleep.assert_called_once_with(3.0)
+
+    @patch('subprocess.Popen')
+    @patch.object(OllamaClient, 'is_running')
+    def test_ensure_running_can_skip_startup(self, mock_is_running, mock_popen):
+        """Test readiness check without attempting startup."""
+        mock_is_running.return_value = False
+
+        self.assertFalse(self.client.ensure_running(start_if_needed=False))
+        mock_popen.assert_not_called()
+
     @patch('requests.post')
     def _test_generate_stream(self, mock_post):
         """Test generate method in streaming mode"""

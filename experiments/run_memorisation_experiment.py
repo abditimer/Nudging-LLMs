@@ -88,6 +88,8 @@ def _setup_experiment_for_terminal():
     # Initialise model
     logger.info("initialise ollama client...")
     client = OllamaClient(model=model_config.name)
+    if not client.ensure_running():
+        raise RuntimeError("Ollama is not running and could not be started.")
     logger.info("✓")
 
     # initialise data
