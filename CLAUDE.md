@@ -2,6 +2,8 @@
 
 This file helps AI agents (Claude Code and others) quickly understand this project and contribute effectively without wasting context on re-discovery.
 
+For the current handoff state, read `PROJECT_STATUS.md` first. This file is the stable repo guide; `PROJECT_STATUS.md` tracks where the work was left and what should happen next.
+
 ---
 
 ## What This Project Is
@@ -124,6 +126,30 @@ The open question being explored in `notebooks/metrics.ipynb`:
 > Does **limiting max_tokens to the target word count** produce better or worse metric scores than unlimited generation?
 
 Early observation: limited generation (~141 words) vs unlimited (~185 words). The hypothesis is that limiting generation reduces padding/hallucination and improves metric scores.
+
+---
+
+## Current Handoff (as of 2026-06-27)
+
+The current working tree has active changes in:
+
+- `notebooks/metrics.ipynb`
+- `nudging/metrics.py`
+- `LITERATURE_REVIEW.md`
+
+The immediate task is to finish the metrics notebook investigation: compare unrestricted generation, model-level length limiting, and post-generation trimming against the same withheld target. The notebook has the scaffolding, but final metric outputs were not saved.
+
+Important mismatch: the notebook is using a newer explicit continuation prompt, while `nudging/experiment.py` still uses the older prompt shown above. Before scaling experiments, pick the canonical prompt and record it in `notebooks/prompt_log.md`.
+
+See `PROJECT_STATUS.md` for the full handoff checklist.
+
+---
+
+## Skill Decision
+
+Keep this file as a repo-local agent guide. It is project-specific and should travel with the repository.
+
+A future Codex skill could be created for the reusable workflow of designing and validating LLM memorization experiments, but it should not be a direct copy of this file. The skill should be short, procedural, and point agents back to repo-local files for project state.
 
 ---
 

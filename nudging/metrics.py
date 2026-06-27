@@ -4,8 +4,16 @@ import numpy as np
 import logging
 logger = logging.getLogger(__name__)
 
-from sentence_transformers import SentenceTransformer
-semantic_model = SentenceTransformer('all-MiniLM-L6-v2')
+semantic_model = None
+
+
+def _get_semantic_model():
+    """Load the embedding model only when semantic similarity is requested."""
+    global semantic_model
+    if semantic_model is None:
+        from sentence_transformers import SentenceTransformer
+        semantic_model = SentenceTransformer('all-MiniLM-L6-v2')
+    return semantic_model
 
 def exact_match_score(generated:str,target:str) -> float:
     """Simple exact character match"""
@@ -36,10 +44,10 @@ def token_overlap_score(generated:str, target:str) -> float:
 def semantic_similarity_score(generated:str, target:str) -> float:
     "cosine similarity of embeddings"
     logger.info('calculating semantic similarity')
-    
 
     if not generated.strip() or not target.strip():
         return 0.0
+    semantic_model = _get_semantic_model()
     embeddings = semantic_model.encode([generated, target])
     similarity = np.dot(embeddings[0], embeddings[1]) / (
         np.linalg.norm(embeddings[0]) * np.linalg.norm(embeddings[1])

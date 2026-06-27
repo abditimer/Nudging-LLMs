@@ -1,5 +1,6 @@
 from collections import defaultdict
 from typing import Dict
+from math import ceil
 from nudging.models import OllamaClient
 from nudging.metrics import exact_match_score, fuzzy_match_score, token_overlap_score, semantic_similarity_score
 
@@ -16,7 +17,24 @@ def _get_split_text(text: str, percentage: float) -> dict:
     d['remaining_words'] = " ".join(words[chunk_size:])
     return d
 
-def _generate_response(content, percentage, model_client):
+def _trim_to_n_words(text: str, max_words: int) -> str:
+    """Trim generated text to the same word span as the withheld target."""
+    words = text.strip().split()
+    return " ".join(words[:max_words])
+
+def _get_num_predict_for_target(target_word_count: int, token_multiplier: float = 1.5) -> int:
+    """Convert the target word count into an approximate Ollama token budget."""
+    if target_word_count <= 0:
+        return 1
+    return ceil(target_word_count * token_multiplier)
+
+def _generate_response(
+    content,
+    percentage,
+    model_client,
+    control_length: bool = True,
+    trim_to_target: bool = True,
+):
     '''
     it connects to our model and sends it the text.
     
@@ -31,14 +49,35 @@ def _generate_response(content, percentage, model_client):
     split_text = _get_split_text(content, percentage)
     context = split_text['test_words']
     target = split_text['remaining_words']
+    target_word_count = len(target.split())
     # Create prompt
     prompt = f"""Continue this text:<StartText>
 {context}
 </StartText>
 Continue:"""
     # Generate with model
-    generated_response = model_client.generate(prompt=prompt)
-    return generated_response, context, target
+    generation_options = {}
+    if control_length:
+        generation_options["num_predict"] = _get_num_predict_for_target(
+            target_word_count=target_word_count,
+            token_multiplier=model_client.words_to_token_multiplier,
+        )
+
+    raw_generated_response = model_client.generate(prompt=prompt, **generation_options)
+    generated_response = raw_generated_response
+    if trim_to_target:
+        generated_response = _trim_to_n_words(
+            text=raw_generated_response,
+            max_words=target_word_count,
+        )
+
+    metadata = {
+        "raw_generated_words": len(raw_generated_response.split()),
+        "trimmed_to_target_words": trim_to_target,
+        "length_controlled": control_length,
+        "num_predict": generation_options.get("num_predict"),
+    }
+    return generated_response, context, target, metadata
 
 def run_single_experiment(
     content: str,
@@ -48,7 +87,7 @@ def run_single_experiment(
 ) -> Dict:
     """Run one experiment, return metrics dict"""
 
-    generated_response, context, target = _generate_response(
+    generated_response, context, target, generation_metadata = _generate_response(
         content, percentage, model_client
     )
 
@@ -63,6 +102,7 @@ def run_single_experiment(
         "target_words": len(target.split()),
         "generated_words": len(generated_response.split()),
         "exact_match": exact_match,
+        **generation_metadata,
     }
 
 def run_experiments(
@@ -87,7 +127,7 @@ def run_experiments(
     :rtype: Dict
     """
     logger.info("running all experiments")
-    generated_response, context, target = _generate_response(
+    generated_response, context, target, generation_metadata = _generate_response(
         content, percentage, model_client
     )
 
@@ -102,5 +142,6 @@ def run_experiments(
         "fuzzy_match": fuzzy_match_score(generated_response, target),
         "token_overlap": token_overlap_score(generated_response, target),
         "semantic_similarity": semantic_similarity_score(generated_response, target),
+        **generation_metadata,
     }
     return metrics
