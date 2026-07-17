@@ -1,6 +1,6 @@
 # Project Status: Nudging Experiment
 
-Last updated: 2026-06-27
+Last updated: 2026-07-17
 
 ## Summary
 
@@ -123,6 +123,19 @@ Before running larger experiments, decide which prompt is canonical. Changing th
    - Shi et al. 2024 and Meeus et al. 2024 must be addressed directly.
    - Avoid claiming that release date is absolute proof of non-training exposure.
    - Prefer "documented post-cutoff content" over "guaranteed post-training content."
+
+## Next Research Phase — 2026-07-17
+
+Move repeatable runs from `notebooks/metrics.ipynb` into the experiment runner, keeping the notebook for inspection, plots, and narrative reporting.
+
+1. Establish a controlled baseline across 20–50 texts at context percentages `[0, 25, 50, 75, 90]`, with a fixed prompt and `temperature=0.0`.
+2. Add controls: correct context, no context, and context from a different song. These distinguish continuation from generic lyric vocabulary or prior model knowledge.
+3. Make word-position accuracy and n-gram overlap the primary recovery metrics. Keep fuzzy similarity and token overlap as descriptive secondary metrics, and compare them with the controls.
+4. Record one row per actual generation condition, with raw output length stored as metadata. Do not include separate trimmed rows when every candidate is trimmed before scoring.
+5. Ensure configured temperature is passed from `ExperimentConfig` to `OllamaClient.generate`; the runner currently falls back to the client's default temperature.
+6. After the baseline, vary model size/family and then temperature, with repeated runs for stochastic settings.
+
+Borrow the useful discipline from Karpathy's Autoresearch—fixed configuration, automated runs, append-only results, and stable evaluation—but do not let an agent autonomously modify prompts, metrics, and hypotheses to maximise overlap.
 
 ## Skill / Agent Guide Decision
 
