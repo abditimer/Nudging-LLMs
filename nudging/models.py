@@ -15,11 +15,11 @@ class OllamaClient:
     
     default host: http://localhost:11434
     """
-    model: str = "qwen2.5:0.5b-instruct" 
+    model: str = "qwen2.5:0.5b-instruct"
     base_url: str = "http://localhost:11434"
-    timeout: int = 300
+    timeout: int = 120
     max_tokens: Optional[int] = None
-    words_to_token_multiplier: float = 1.5
+    words_to_token_multiplier: float = 1.2
 
     def is_running(self) -> bool:
         """Return whether the configured Ollama endpoint is reachable."""
