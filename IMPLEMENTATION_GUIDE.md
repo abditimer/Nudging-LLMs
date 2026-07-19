@@ -6,9 +6,8 @@ Turn the one-text exploratory workflow in `notebooks/metrics.ipynb` and
 `notebooks/metrics_clean.ipynb` into one reproducible 600-run pilot with the
 smallest useful change to the existing project.
 
-The notebooks remain the **test bench**: inspect a prompt, a single output, and
-metric behaviour there. The package and terminal runner become the only path
-for saved batch results.
+The notebooks remain the **test bench** for prompt and metric behaviour. The
+package and terminal runner become the only path for saved batch results.
 
 The fixed pilot grid is:
 
@@ -22,15 +21,15 @@ Use contexts `[0, 25, 50, 75, 90]` and temperatures `[0.0, 0.7]`.
 
 ### 1. Freeze and record the pilot design
 
-Write a new **Pilot Configuration (Frozen)** section in `PROJECT_STATUS.md`.
+Write a **Pilot Configuration (Frozen)** section in `PROJECT_STATUS.md`.
 Record:
 
-- pilot name and output filename, e.g. `pilot_600_v2`;
+- pilot name and output filename, currently `pilot_600_v4`;
 - the two exact Ollama model names;
 - a deterministic list of the 30 source-text IDs;
 - contexts `[0, 25, 50, 75, 90]`;
 - temperatures `[0.0, 0.7]`;
-- prompt version `v2_2026_07_17` (or the final name you choose);
+- prompt version `v4`;
 - token multiplier `1.5`;
 - fixed seed, if supported by your Ollama/model combination;
 - primary condition: token-capped generation, then trim to target words.
@@ -43,31 +42,29 @@ reason, and observations. Do not change the prompt while a batch is underway.
 Do **not** parse or import `prompt_log.md` at runtime. Markdown is the research
 record, not executable configuration.
 
-Add one small module, `nudging/prompts.py`, containing:
+Maintain the canonical prompt module, `nudging/prompt.py`, containing:
 
-- the final v2 template from the notebook;
+- the frozen v4 template from the notebook;
 - a `build_continuation_prompt(version, context_text, target_word_count)`
   function;
 - an error for an unknown version.
 
 Add `prompt_version` to `ExperimentConfig`, and make
-`nudging/experiment.py` call this builder instead of embedding its older
-prompt. Save `prompt_version` in every result row.
+`nudging/experiment.py` call this builder instead of embedding a prompt.
 
-This fixes the current mismatch: the notebook uses v2, while
-`nudging/experiment.py` still uses the old `Continue this text` prompt.
+The prompt log remains the research record; it is not read at runtime.
 
 ### 3. Make package generation exactly match the chosen notebook condition
 
 Refactor the one-run function in `nudging/experiment.py` so it alone performs:
 
 1. whitespace-word split into context and held-out target;
-2. v2 prompt construction;
+2. v4 prompt construction;
 3. `num_predict = ceil(target_word_count * 1.5)`;
 4. one Ollama generation;
 5. trimming that output to `target_word_count` words;
 6. scoring the trimmed output;
-7. returning metadata, scores, and the raw/trimmed output.
+7. returning metadata and scores.
 
 Forward `temperature` and `seed` explicitly to `OllamaClient.generate()`.
 They are configured today but not passed by the runner, so generation quietly
@@ -108,15 +105,9 @@ Keep existing `fuzzy_match` and `token_overlap` as descriptive secondary
 metrics. They can be non-zero for generic lyric vocabulary and do not establish
 recovery of the withheld continuation.
 
-Add the notebook’s word-position accuracy as the primary recovery metric:
-
-```text
-matching lower-cased words at the same position / target word count
-```
-
-Keep the existing character-position score only if you label it precisely as
-`character_position_accuracy`; its present name, `exact_match`, is misleading
-because it is not all-or-nothing exact-string equality.
+Keep the existing `exact_match` character-position score as the primary score
+for this pilot. Do not add word-position accuracy or rename the existing CSV
+column during this implementation pass.
 
 Make semantic similarity an explicit optional setting. The notebook correctly
 allows it to be off, but the package currently computes it for every run,
@@ -125,7 +116,9 @@ which would load the embedding model during the pilot.
 ### 6. Define one complete, auditable result row
 
 One actual generation condition produces one row. Save decimal scores in the
-file; show percentages only in terminal output, notebooks, and plots.
+file; show percentages only in terminal output, notebooks, and plots. The CSV
+stores metadata, lengths, and scores only; it deliberately does not store the
+prompt version or generated text.
 
 ```text
 run_id
@@ -136,17 +129,15 @@ category
 model
 temperature
 seed
-prompt_version
 context_percentage
-context_word_count
-target_word_count
+context_words
+target_words
 num_predict
-raw_generated_response
-trimmed_generated_response
 raw_generated_words
 generated_words
-word_position_accuracy
-character_position_accuracy
+raw_length_ratio
+scored_length_ratio
+exact_match
 fuzzy_match
 token_overlap
 semantic_similarity
@@ -161,7 +152,7 @@ Update `experiments/run_memorisation_experiment.py` to:
 
 1. load the selected 30 texts;
 2. loop over texts, contexts, models, and temperatures;
-3. read `results/metrics/pilot_600_v2.csv` if present;
+3. read `results/metrics/pilot_600_v4.csv` if present;
 4. skip any completed `run_id`;
 5. call the canonical one-run package function;
 6. append each result immediately;
@@ -178,11 +169,11 @@ for this pilot.
 
 Extend `tests/test_experiment.py` with fake-client tests for:
 
-- the requested prompt version and prompt contents;
+- v4 prompt contents and rejection of an unknown prompt version;
 - `temperature` and `seed` forwarding;
 - `num_predict` using the frozen `1.5` multiplier;
 - trimming to the target word count;
-- required result fields;
+- the configured result fields;
 - stable `run_id` generation;
 - skipping an already completed run on resume.
 
@@ -193,13 +184,21 @@ Do not unit-test Ollama itself.
 Run these in order:
 
 1. one text × one context × one model × one temperature;
-2. inspect the saved row and raw/trimmed text manually;
+2. confirm the saved row's metadata, lengths, and scores;
 3. a 10-run smoke test;
 4. the full 600-run pilot.
 
-Before step 4, confirm that result rows contain the correct prompt version,
-model, temperature, seed, lengths, and scores, and that restarting the runner
-skips completed IDs.
+Before step 4, confirm the model, temperature, seed, lengths, and scores, and
+that restarting the runner skips completed IDs. Reviewing generated text is a
+future validation goal, not a prerequisite for this pilot.
+
+### Future validation goal: review generated text
+
+After the batch workflow is established, add a deliberate text-review process
+for a small, documented sample of conditions. Decide separately whether that
+review should use temporary local output, a protected research artifact, or a
+new optional export. Do not add generated text to the pilot CSV as part of the
+current implementation.
 
 ### 10. Analyse only after the batch is complete
 
@@ -226,7 +225,7 @@ these local models—not all LLMs.
 
 ## Definition of done
 
-The pilot is ready for analysis when `results/metrics/pilot_600_v2.csv` has
+The pilot is ready for analysis when `results/metrics/pilot_600_v4.csv` has
 600 completed or documented-error rows, rerunning does not repeat completed
 runs, all rows carry the frozen metadata and scores, and the final design is
 recorded in both `PROJECT_STATUS.md` and `notebooks/prompt_log.md`.

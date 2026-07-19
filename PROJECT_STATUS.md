@@ -21,17 +21,36 @@ From `README.md`, the project is organized around four research questions:
 4. Test how prefix length affects completion accuracy for unseen content.
    - Working hypothesis: longer prefixes provide local context but should not enable true memorization of unseen text.
 
-## Pilot Configuration (Frozen)
+## Pilot Configuration (Partially Frozen)
 
-- pilot name and output filename, e.g. `pilot_600_v2`; pilot_600_v1
-- the two exact Ollama model names;
-- a deterministic list of the 30 source-text IDs;
-- contexts: [0, 25, 50, 75, 90]
-- temperatures [0.0, 0.7]
-- prompt version `v2_2026_07_17`
+- pilot name and output filename: `pilot_600_v4` / `pilot_600_v4.csv`
+- Ollama models: `qwen2.5:0.5b-instruct` and `llama3.2:1b-instruct-q4_K_M`
+- contexts: `[0, 25, 50, 75, 90]`
+- temperatures: `[0.0, 0.7]`
+- prompt version: `v4` (the latest prompt recorded in `notebooks/prompt_log.md`)
 - token multiplier: `1.5`
-- fixed seed
+- fixed seed: `42`
 - primary condition: token-capped generation, then trim to target words.
+
+The text list is not frozen yet: the local dataset currently has three source
+texts, rather than the 30 required for the pilot. Add the 30 exact text IDs to
+`PILOT_600.selected_text_ids` before starting the full batch.
+
+## Current Run: Two-Song Pilot
+
+- configuration and output: `pilot_songs_40_v4` / `pilot_songs_40_v4.csv`
+- source texts: `songs::taylor_swift::the_fate_of_ophelia` and
+  `songs::taylor_swift::shake_it_off`
+- grid: 2 texts × 5 contexts × 2 models × 2 temperatures = 40 runs
+- all other settings match the partially frozen 600-run pilot above.
+
+## Configuration Tracks
+
+- `PILOT_600` in `configs/experiment_config.py` is the frozen batch-pilot
+  configuration. It is the source of truth for saved, repeatable runs.
+- `experimental()` in the same file creates a one-model configuration for
+  `notebooks/metrics.ipynb` and `notebooks/metrics_clean.ipynb`. It is for
+  prompt, length, and metric debugging only; its results are not batch data.
 
 ## Skill / Agent Guide Decision
 

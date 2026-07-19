@@ -21,88 +21,119 @@ class DataConfig:
 @dataclass
 class ModelConfig:
     name: str = "qwen3:0.6b"
-    temperature: float = 0.7
     endpoint: str = "http://localhost:11434"
-    max_tokens: Optional[int] = None
 
 @dataclass
 class ExperimentConfig:
     name: str = "memorisation_study"
-    random_seed: int = 42
-    model_config: ModelConfig = field(default_factory=ModelConfig)
+    models: list[ModelConfig] = field(default_factory=list)
     data_config: DataConfig = field(default_factory=DataConfig)
-    context_percentages: List[int] = None
-    max_samples: Optional[int] = None
+    context_percentages: list[int] = field(
+        default_factory=lambda: [0, 25, 50, 75, 90]
+    )
+    temperatures: list[float] = field(
+        default_factory=lambda: [0.0, 0.7]
+    )
+    random_seed: int = 42
+    prompt_version: str = "v4"
+    token_multiplier: float = 1.5
+    include_semantic: bool = False
+    selected_text_ids: list[str] = field(default_factory=list)
+    output_filename: str = "pilot_600_v4.csv"
     context_delay_seconds: float = 0.0
-    prompt_version: str = "v3"
 
-    def __post_init__(self):
-        if self.context_percentages is None:
-            self.context_percentages = [20,60]
-    
-    def start_logging(self):
-        logger.info(f"Running experiment: {self.name}")
-        logger.info(f"Contexted to run: {self.context_percentages}")
-
-
-# builder function that lets for quicker experimentation
-def baseline(
-        model:str = "qwen3:0.6b",
+# Configuration track 1: lightweight, one-model notebook experiments.
+def experimental(
+        model: str = "qwen3:0.6b",
         categories: Optional[List[str]] = None,
         context_pcts: Optional[List[int]] = None,
-        max_samples: Optional[int] = None,
         context_delay_seconds: float = 0.0,
         temperature: float = 0.7,
-        max_tokens: Optional[int] = None,
-        **kwargs
+        random_seed: int = 42,
+        prompt_version: str = "v4",
+        token_multiplier: float = 1.5,
+        include_semantic: bool = False,
 ) -> ExperimentConfig:
-    """Create a baseline memorisation exp with custom params"""
+    """Create a one-model configuration for exploratory notebook work."""
     return ExperimentConfig(
-        name="memorisation_baseline",
-        context_percentages=context_pcts or [40],
-        max_samples=max_samples,
-        context_delay_seconds=context_delay_seconds,
-        model_config=ModelConfig(
-            name=model,
-            temperature=temperature,
-            max_tokens=max_tokens
-        ),
-        data_config=DataConfig(
-            categories=categories
-        ),
-        **kwargs
-    )
-
-def extended(
-        model:str = "qwen3:0.6b",
-        categories: Optional[List[str]] = None,
-        context_pcts: Optional[List[int]] = None,
-        max_samples: Optional[int] = None,
-        context_delay_seconds: float = 0.0,
-        temperature: float = 0.7,
-        max_tokens: Optional[int] = None,
-        **kwargs
-) -> ExperimentConfig:
-    """Create a extnded memorisation exp with custom params"""
-    return ExperimentConfig(
-        name="memorisation_extended",
+        name="memorisation_experimental",
+        models=[ModelConfig(name=model)],
+        data_config=DataConfig(categories=categories or ["songs"]),
         context_percentages=context_pcts or [5,25,50,75,90],
-        max_samples=max_samples,
+        temperatures=[temperature],
+        random_seed=random_seed,
+        prompt_version=prompt_version,
+        token_multiplier=token_multiplier,
+        include_semantic=include_semantic,
         context_delay_seconds=context_delay_seconds,
-        model_config=ModelConfig(
-            name=model,
-            temperature=temperature,
-            max_tokens=max_tokens
-        ),
-        data_config=DataConfig(
-            categories=categories or ["songs"]
-        ),
-        **kwargs
     )
 
-EXPERIMENT_BASELINE_ONLY_SONGS_QWEN = baseline(
-    model="qwen2.5:0.5b-instruct",
-    categories=["songs"],
-    context_pcts=[0, 25, 60, 90],
-    context_delay_seconds=5.0
+# Configuration track 2: the frozen, resumable batch pilot.
+PILOT_SMOKE = ExperimentConfig(
+    name="pilot_smoke_v4",
+    models=[ModelConfig(name="qwen2.5:0.5b-instruct")],
+    data_config=DataConfig(categories=["songs"]),
+    context_percentages=[0, 25, 50, 75, 90],
+    temperatures=[0.0, 0.7],
+    random_seed=42,
+    prompt_version="v4",
+    token_multiplier=1.5,
+    include_semantic=False,
+    selected_text_ids=["songs::taylor_swift::the_fate_of_ophelia"],
+    output_filename="pilot_smoke_v4.csv",
+    context_delay_seconds=5.0,
 )
+
+
+PILOT_600 = ExperimentConfig(
+    name="pilot_600_v4",
+    models=[
+        ModelConfig(name="qwen2.5:0.5b-instruct"),
+        ModelConfig(name="llama3.2:1b-instruct-q4_K_M"),
+    ],
+    data_config=DataConfig(categories=["songs"]),
+    context_percentages=[0, 25, 50, 75, 90],
+    temperatures=[0.0, 0.7],
+    random_seed=42,
+    prompt_version="v4",
+    token_multiplier=1.5,
+    include_semantic=False,
+    selected_text_ids=[
+        # Add your exact 30 dataset IDs here.
+        "songs::taylor_swift::the_fate_of_ophelia"
+    ],
+    output_filename="pilot_600_v4.csv",
+    context_delay_seconds=5.0,
+)
+
+
+# A bounded two-song run using the same model, prompt, and decoding settings as
+# the eventual full pilot: 2 texts × 5 contexts × 2 models × 2 temperatures.
+PILOT_SONGS_40 = ExperimentConfig(
+    name="pilot_songs_40_v4",
+    models=[
+        ModelConfig(name="qwen2.5:0.5b-instruct"),
+        ModelConfig(name="llama3.2:1b-instruct-q4_K_M"),
+    ],
+    data_config=DataConfig(categories=["songs"]),
+    context_percentages=[0, 25, 50, 75, 90],
+    temperatures=[0.0, 0.7],
+    random_seed=42,
+    prompt_version="v4",
+    token_multiplier=1.5,
+    include_semantic=False,
+    selected_text_ids=[
+        "songs::taylor_swift::the_fate_of_ophelia",
+        "songs::taylor_swift::shake_it_off",
+    ],
+    output_filename="pilot_songs_40_v4.csv",
+    context_delay_seconds=5.0,
+)
+
+
+# Terminal-facing names. Add future named experiment configurations here.
+EXPERIMENT_CONFIGS = {
+    "smoke": PILOT_SMOKE,
+    "songs-40": PILOT_SONGS_40,
+    "pilot-600": PILOT_600,
+}

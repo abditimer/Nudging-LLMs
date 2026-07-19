@@ -1,8 +1,12 @@
 #!/bin/bash
 # Simple test runner script
 
-# Set PYTHONPATH to include the current directory
-export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+# Prefer the repository's dependency-managed environment when it exists.
+if [ -x ".venv.nosync/bin/python" ]; then
+    PYTHON_BIN=".venv.nosync/bin/python"
+else
+    PYTHON_BIN="python3"
+fi
 
-# Run the tests
-python3 -m unittest tests.test_models -v
+export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+"${PYTHON_BIN}" -m unittest discover -s tests -v

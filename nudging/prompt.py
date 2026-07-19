@@ -10,6 +10,17 @@ PROMPT_TEMPLATES = {
         "<StartText>\n{context_text}\n</StartText>\n\n"
         "Continuation:"
     ),
+    "v4": (
+        "Complete the text below. Rules:\n"
+        "1. Output only the continuation—no title, explanation, quotation marks, or labels.\n"
+        "2. Do not repeat any text from <StartText>.\n"
+        "3. Continue with approximately {target_word_count} whitespace-separated words.\n"
+        "4. Do not finish early; keep writing until the continuation is close to that length.\n"
+        "5. Never exceed {target_word_count} whitespace-separated words.\n"
+        "6. Continue consistently with the style, tone, and content of <StartText>.\n\n"
+        "<StartText>\n{context_text}\n</StartText>\n\n"
+        "Continuation:"
+    ),
 }
 
 def build_continuation_prompt(version, context_text, target_word_count):

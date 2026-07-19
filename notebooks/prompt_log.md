@@ -47,7 +47,8 @@ Continue from here:
 
 **Date:** 2026-07-17
 
-````Complete the text below. Rules:
+```
+Complete the text below. Rules:
 1. Output only the continuation—no title, explanation, quotation marks, or labels.
 2. Do not repeat any text from <StartText>.
 3. Write close to but at most {target_word_count} whitespace-separated words.
@@ -58,8 +59,38 @@ Continue from here:
 {context_text}
 </StartText>
 
-Continuation:```
+Continuation:
+```
 
 **Reasoning:** The model was not sticking to the agreed amount, so testing a more formal approach that has enforcement mechanism. had to add something on getting close to the word count as it would only spit out a few words.
-**Observed issue:** TBD
-````
+**Observed issue:** The model can still stop far short of the target length,
+because both the prompt and `num_predict` give it an upper bound rather than a
+minimum length requirement.
+
+---
+
+## v4 — Length-encouraging continuation
+
+**Date:** 2026-07-19
+
+```
+Complete the text below. Rules:
+1. Output only the continuation—no title, explanation, quotation marks, or labels.
+2. Do not repeat any text from <StartText>.
+3. Continue with approximately {target_word_count} whitespace-separated words.
+4. Do not finish early; keep writing until the continuation is close to that length.
+5. Never exceed {target_word_count} whitespace-separated words.
+6. Continue consistently with the style, tone, and content of <StartText>.
+
+<StartText>
+{context_text}
+</StartText>
+
+Continuation:
+```
+
+**Reasoning:** v3's “close to but at most” wording allowed very short answers.
+v4 keeps the hard maximum but explicitly asks the model to continue until it is
+near the target length.
+
+**Observed issue:** To be tested in `metrics.ipynb` and `metrics_clean.ipynb`.
