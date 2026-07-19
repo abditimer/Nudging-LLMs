@@ -43,18 +43,16 @@ Continue from here:
 
 ---
 
-## v2 — Explicit continuation
+## v3 — Explicit continuation
 
 **Date:** 2026-07-17
 
-````Complete the text below.
-
-Rules:
-- Output only the continuation—no title, explanation, quotation marks, or labels.
-- Do not repeat any text from <StartText>.
-- Write close to but at most {target_word_count} whitespace-separated words.
-- Stop immediately after the final word.
-- do not leave it up to me, it is up to you to continue the text in a way that is consistent with the style, tone, and content of the text in <StartText>.
+````Complete the text below. Rules:
+1. Output only the continuation—no title, explanation, quotation marks, or labels.
+2. Do not repeat any text from <StartText>.
+3. Write close to but at most {target_word_count} whitespace-separated words.
+4. Stop immediately after the final word.
+5. do not leave it up to me, it is up to you to continue the text in a way that is consistent with the style, tone, and content of the text in <StartText>.
 
 <StartText>
 {context_text}

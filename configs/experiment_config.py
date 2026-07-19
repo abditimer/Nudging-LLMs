@@ -26,14 +26,6 @@ class ModelConfig:
     max_tokens: Optional[int] = None
 
 @dataclass
-class PromptConfig:
-    """
-    Track prompts
-    """
-    version: str
-    prompt: str
-
-@dataclass
 class ExperimentConfig:
     name: str = "memorisation_study"
     random_seed: int = 42
@@ -42,6 +34,7 @@ class ExperimentConfig:
     context_percentages: List[int] = None
     max_samples: Optional[int] = None
     context_delay_seconds: float = 0.0
+    prompt_version: str = "v3"
 
     def __post_init__(self):
         if self.context_percentages is None:
@@ -112,62 +105,4 @@ EXPERIMENT_BASELINE_ONLY_SONGS_QWEN = baseline(
     categories=["songs"],
     context_pcts=[0, 25, 60, 90],
     context_delay_seconds=5.0
-)
-
-# ---------------------------
-# Removing the below, but keeping for reproducability
-# ---------------------------
-
-
-# Pre-defined configs for common experiments
-EXPERIMENT_BASELINE_SAMPLED = ExperimentConfig(
-    name="memorisation_baseline",
-    context_percentages=[40],
-    max_samples=3,
-    model_config=ModelConfig(),
-    data_config=DataConfig()
-)
-
-EXPERIMENT_BASELINE_ONLY_SONGS_QWEN_old = ExperimentConfig(
-    name="memorisation_baseline",
-    context_percentages=[0, 25, 60, 90],
-    model_config=ModelConfig(name="qwen2.5:0.5b-instruct"),
-    data_config=DataConfig(
-        categories=["songs"]
-    ),
-    context_delay_seconds=5.0,
-)
-
-EXPERIMENT_BASELINE_ONLY_SONGS_LLAMA = ExperimentConfig(
-    name="memorisation_baseline",
-    context_percentages=[0, 25, 60, 90],
-    model_config=ModelConfig(name="llama3.2:1b-instruct-q4_K_M"),
-    data_config=DataConfig(
-        categories=["songs"]
-    ),
-    context_delay_seconds=5.0,
-)
-
-EXPERIMENT_BASELINE = ExperimentConfig(
-    name="memorisation_baseline",
-    context_percentages=[40],
-    model_config=ModelConfig(),
-    data_config=DataConfig()
-)
-
-EXPERIMENT_BASELINE_MULTIPLE = ExperimentConfig(
-    name="memorisation_baseline",
-    context_percentages=[20, 40, 60],
-    #max_samples=3,
-    model_config=ModelConfig(),
-    data_config=DataConfig()
-)
-
-EXPERIMENT_EXTENDED = ExperimentConfig(
-    name="memorisation_extended", 
-    context_percentages=[5, 25, 50, 75, 90],
-    model_config=ModelConfig(),
-    data_config=DataConfig(
-        categories=["songs"]
-    )
 )
